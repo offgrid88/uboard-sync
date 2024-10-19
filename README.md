@@ -76,7 +76,7 @@ Edit the `boards_config.yaml` file to include your boards' information. See the 
 ### 2. Run uBoardSync
 
 ```bash
-ros2 run uboardsync uboardsync_node
+ros2 run uboardsync uboard_sync_node
 ```
 
 This command starts the uBoardSync node, which begins monitoring for connected boards as per your configuration.
@@ -164,7 +164,7 @@ uBoardSync publishes the status of connected boards on ROS 2 topics:
 After configuring your boards, run the node:
 
 ```bash
-ros2 run uboardsync uboardsync_node
+ros2 run uboardsync uboard_sync_node
 ```
 
 ### Monitoring Topics
