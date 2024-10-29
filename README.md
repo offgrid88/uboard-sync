@@ -82,7 +82,7 @@ If you wish to use the heartbeat monitoring feature, ensure it's enabled in the 
 ### 3. Run uBoardSync
 
 ```bash
-ros2 run uboardsync uboardsync_node
+ros2 run uboardsync uboard_sync_node
 ```
 
 This command starts the uBoardSync node, which begins monitoring for connected boards as per your configuration.
@@ -206,7 +206,7 @@ uBoardSync publishes the status of connected boards on ROS 2 topics:
 After configuring your boards and enabling heartbeat functionality, run the node:
 
 ```bash
-ros2 run uboardsync uboardsync_node
+ros2 run uboardsync uboard_sync_node
 ```
 
 ### Monitoring Topics
@@ -264,4 +264,4 @@ Contributions are welcome! If you encounter issues or have suggestions, please o
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [Apache-2.0 License](LICENSE).
