@@ -1,4 +1,3 @@
-
 # TODO List for uBoardSync
 
 **uBoardSync** is a C++ ROS 2 Humble node designed to manage micro-ROS agents for multiple boards seamlessly. This document outlines the tasks required to complete the project, from initial setup to deployment.
@@ -19,6 +18,7 @@
   - [2.4 Create Agent Manager](#24-create-agent-manager)
   - [2.5 Develop Main Node](#25-develop-main-node)
   - [2.6 Implement Namespace Isolation](#26-implement-namespace-isolation)
+  - [2.7 Implement Heartbeat Functionality](#27-implement-heartbeat-functionality)
 - [Phase 3: Enhanced Features](#phase-3-enhanced-features)
   - [3.1 Dynamic Configuration Reload](#31-dynamic-configuration-reload)
   - [3.2 Error Handling and Recovery](#32-error-handling-and-recovery)
@@ -47,7 +47,7 @@
 
 ## Project Overview
 
-**Objective**: Develop a ROS 2 Humble node that automates the detection of micro-ROS boards, manages individual agents for each board, monitors their status, and handles udev rules for device identification.
+**Objective**: Develop a ROS 2 Humble node that automates the detection of micro-ROS boards, manages individual agents for each board, monitors their status, handles udev rules for device identification, and monitors heartbeats from each board to ensure agent reliability.
 
 ---
 
@@ -136,6 +136,22 @@
   - [ ] Modify agent startup commands to include namespace arguments.
   - [ ] Update documentation to reflect namespace usage.
 
+### 2.7 Implement Heartbeat Functionality
+
+- **Tasks**:
+  - [ ] Define the heartbeat mechanism between the boards and uBoardSync.
+    - [ ] Decide on the heartbeat message type (e.g., `std_msgs::Empty`).
+    - [ ] Determine the heartbeat topic naming convention.
+  - [ ] Update `boards_config.yaml` structure to include heartbeat parameters.
+    - [ ] Add `heartbeat_topic` and `heartbeat_timeout` parameters.
+  - [ ] Modify `config_loader` to parse new heartbeat parameters.
+  - [ ] Implement heartbeat monitoring in the main node.
+    - [ ] Subscribe to the specified `heartbeat_topic` for each board.
+    - [ ] Implement a timer or watchdog for heartbeat timeouts.
+    - [ ] Restart the agent if a heartbeat is not received within `heartbeat_timeout`.
+  - [ ] Ensure thread safety when monitoring multiple heartbeats.
+  - [ ] Test heartbeat functionality with simulated board heartbeats.
+
 ---
 
 ## Phase 3: Enhanced Features
@@ -166,6 +182,7 @@
   - [ ] Log significant events such as:
     - [ ] Board connections/disconnections.
     - [ ] Agent startups and shutdowns.
+    - [ ] Heartbeat timeouts and agent restarts.
     - [ ] Errors and warnings.
   - [ ] Optionally integrate with external monitoring tools or ROS 2 diagnostics.
 
@@ -201,6 +218,9 @@
     - [ ] Udev rule generation.
     - [ ] Board detection logic.
     - [ ] Agent management functions.
+    - [ ] Heartbeat monitoring logic.
+      - [ ] Simulate heartbeat messages and verify correct behavior.
+      - [ ] Test agent restart upon heartbeat timeout.
   - [ ] Mock external dependencies where necessary.
 
 ### 4.2 Integration Testing
@@ -212,6 +232,7 @@
     - [ ] Board connections and disconnections.
     - [ ] Agent startups and shutdowns.
     - [ ] Topic publishing and subscriptions.
+    - [ ] Heartbeat monitoring and agent restarts.
   - [ ] Validate that the system handles multiple boards correctly.
 
 ### 4.3 Continuous Integration Setup
@@ -243,6 +264,10 @@
     - [ ] Installation instructions.
     - [ ] Usage examples.
     - [ ] Configuration details.
+    - [ ] Heartbeat functionality.
+      - [ ] How to enable and configure heartbeat monitoring.
+      - [ ] Examples of heartbeat configuration.
+      - [ ] Expected behavior when a heartbeat timeout occurs.
   - [ ] Include examples and screenshots where helpful.
   - [ ] Provide troubleshooting tips for common issues.
 
@@ -296,6 +321,7 @@
     - [ ] Choose a GUI framework (e.g., Qt, GTK).
     - [ ] Display connected boards and their statuses.
     - [ ] Provide controls to start/stop agents manually.
+    - [ ] Visualize heartbeat statuses.
   - [ ] Integrate the GUI with the ROS 2 node.
 
 ### 7.2 Web-Based Dashboard
@@ -305,6 +331,7 @@
     - [ ] Use web technologies like React or Vue.js.
     - [ ] Set up a backend server to interface with the ROS 2 node.
   - [ ] Implement real-time updates using WebSockets.
+  - [ ] Display heartbeat information and agent statuses.
 
 ### 7.3 Multi-Platform Support
 
@@ -320,4 +347,3 @@
   - [ ] Implement ROS 2 security features (SROS2) for encrypted communication.
   - [ ] Ensure file permissions are set correctly for udev rules and logs.
   - [ ] Conduct a security audit to identify and fix vulnerabilities.
-
