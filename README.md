@@ -1,6 +1,6 @@
 # uBoardSync
 
-**uBoardSync** is a ROS 2 Humble node designed to manage micro-ROS agents for multiple boards seamlessly. It automatically detects new boards, creates and runs a ROS agent for each, monitors board statuses to stop agents upon disconnection, and manages udev rules for device identification. This tool simplifies the integration of multiple micro-ROS devices into your ROS 2 ecosystem.
+**uBoardSync** is a ROS 2 Humble node designed to manage micro-ROS agents for multiple boards seamlessly. It automatically detects new boards, creates and runs a ROS agent for each, monitors board statuses to stop agents upon disconnection, and manages udev rules for device identification. Additionally, it can monitor heartbeats from each board and restart agents if a heartbeat is not received. This tool simplifies the integration of multiple micro-ROS devices into your ROS 2 ecosystem.
 
 ## Table of Contents
 
@@ -9,6 +9,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [Heartbeat Functionality](#heartbeat-functionality)
 - [Udev Rule Manager](#udev-rule-manager)
 - [Topics](#topics)
 - [Example](#example)
@@ -20,6 +21,7 @@
 - **Automatic Board Detection**: Detects when new micro-ROS boards are connected.
 - **Dynamic Agent Management**: Creates and runs a micro-ROS agent for each detected board.
 - **Board Monitoring**: Monitors board status and stops the agent if a board disconnects.
+- **Heartbeat Monitoring**: *New Feature*—monitors heartbeats from each board and restarts the agent if a heartbeat is not received.
 - **Udev Rule Management**: Automatically creates udev rules and symlinks based on provided PID and VID.
 - **Configurable Boards List**: Uses a configuration file to manage board settings.
 - **ROS 2 Topics**: Publishes the status of connected boards on specific ROS 2 topics.
@@ -73,7 +75,11 @@ pip install -r uboardsync/requirements.txt
 
 Edit the `boards_config.yaml` file to include your boards' information. See the [Configuration](#configuration) section for details.
 
-### 2. Run uBoardSync
+### 2. Enable Heartbeat Functionality (Optional)
+
+If you wish to use the heartbeat monitoring feature, ensure it's enabled in the configuration file. See the [Heartbeat Functionality](#heartbeat-functionality) section for details.
+
+### 3. Run uBoardSync
 
 ```bash
 ros2 run uboardsync uboard_sync_node
@@ -95,12 +101,16 @@ boards:
     serial_number: 'ABC12345'
     agent_port: '/dev/uboard_board_1'
     namespace: 'board_1_ns'
+    heartbeat_topic: '/board_1/heartbeat'
+    heartbeat_timeout: 5
   - name: board_2
     pid: '0x2341'
     vid: '0x0043'
     serial_number: 'DEF67890'
     agent_port: '/dev/uboard_board_2'
     namespace: 'board_2_ns'
+    heartbeat_topic: '/board_2/heartbeat'
+    heartbeat_timeout: 5
 ```
 
 ### Configuration Parameters
@@ -111,6 +121,37 @@ boards:
 - **serial_number**: Serial number of the board (optional but recommended for precise identification).
 - **agent_port**: The symlinked device path that udev will create (e.g., `'/dev/uboard_board_1'`).
 - **namespace**: The ROS 2 namespace to be used by the agent.
+- **heartbeat_topic**: (*Optional*) The topic on which the board publishes its heartbeat messages.
+- **heartbeat_timeout**: (*Optional*) The time in seconds after which, if no heartbeat is received, the agent will be restarted.
+
+## Heartbeat Functionality
+
+When the heartbeat functionality is enabled, uBoardSync listens for heartbeat messages from each board on the specified `heartbeat_topic`. If no heartbeat is received within the `heartbeat_timeout` period, uBoardSync will automatically restart the agent associated with that board.
+
+### Enabling Heartbeat Monitoring
+
+To enable heartbeat monitoring for a board, add the `heartbeat_topic` and `heartbeat_timeout` parameters to the board's configuration in `boards_config.yaml`.
+
+- **heartbeat_topic**: The ROS 2 topic where the board publishes its heartbeat messages. It should be unique per board.
+- **heartbeat_timeout**: The duration in seconds to wait for a heartbeat before restarting the agent.
+
+### Heartbeat Message Format
+
+Boards should publish heartbeat messages on the specified `heartbeat_topic` using the `std_msgs/Empty` message type or any other type as per your implementation.
+
+### Example Board Configuration with Heartbeat
+
+```yaml
+boards:
+  - name: board_1
+    pid: '0x2341'
+    vid: '0x0043'
+    serial_number: 'ABC12345'
+    agent_port: '/dev/uboard_board_1'
+    namespace: 'board_1_ns'
+    heartbeat_topic: '/board_1/heartbeat'
+    heartbeat_timeout: 5
+```
 
 ## Udev Rule Manager
 
@@ -156,12 +197,13 @@ uBoardSync publishes the status of connected boards on ROS 2 topics:
 
 - **`/uboardsync/connected_boards`** (`std_msgs/String`): Lists the names of currently connected boards.
 - **`/uboardsync/board_status/<board_name>`** (`std_msgs/Bool`): Indicates whether a specific board is connected (`True`) or disconnected (`False`).
+- **Heartbeat Topics**: Each board publishes heartbeat messages on its specified `heartbeat_topic`.
 
 ## Example
 
 ### Running the Node
 
-After configuring your boards, run the node:
+After configuring your boards and enabling heartbeat functionality, run the node:
 
 ```bash
 ros2 run uboardsync uboard_sync_node
@@ -181,9 +223,21 @@ Monitor a specific board's status:
 ros2 topic echo /uboardsync/board_status/board_1
 ```
 
+### Simulating Heartbeat Messages
+
+Ensure that each board publishes heartbeat messages on the specified `heartbeat_topic`. For testing purposes, you can publish heartbeat messages manually:
+
+```bash
+ros2 topic pub /board_1/heartbeat std_msgs/Empty
+```
+
 ### Interacting with Agents
 
 Agents for each board are namespaced as per your configuration. You can interact with them using standard ROS 2 tools.
+
+### Heartbeat Failure and Agent Restart
+
+If a board stops publishing heartbeat messages, uBoardSync will detect the absence of heartbeats after the `heartbeat_timeout` period and will restart the agent for that board.
 
 ## Contributing
 
